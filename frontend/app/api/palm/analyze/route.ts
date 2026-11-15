@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server';
+import { store } from '@/lib/store';
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    const userId = body.userId || 'usr-demo-01';
+
+    // Verify credits before processing
+    const userCredits = store.getUserCredits(userId);
+    if (userCredits.palmReadings <= 0) {
+      return NextResponse.json({
+        success: false,
+        outOfCredits: true,
+        error: 'तपाईंको हस्तरेखा परीक्षण कोटा सकिएको छ। कृपया योजना अपग्रेड गर्नुहोस्।',
+        errorEn: 'Your palm reading credits have been exhausted. Please upgrade your plan.'
+      }, { status: 403 });
+    }
+
     const handType = body.handType === 'left' ? 'left' : 'right';
     const isRight = handType === 'right';
 
@@ -131,10 +145,14 @@ export async function POST(req: Request) {
       }
     };
 
+    // Deduct credit only on successful analysis completion
+    const deduction = store.checkAndDeductCredit(userId, 'palm_reading');
+
     return NextResponse.json({
       success: true,
       quality: { status: 'verified', messageEn: 'Verified', messageNe: 'प्रमाणीकरण सफल भयो', isAcceptable: true },
-      reading
+      reading,
+      remainingCredits: deduction.remaining
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 400 });

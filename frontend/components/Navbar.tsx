@@ -13,6 +13,7 @@ import {
   Bot, 
   LayoutDashboard, 
   Bookmark, 
+  CreditCard,
   Sun, 
   Moon, 
   Globe, 
@@ -35,6 +36,7 @@ export function Navbar() {
     { href: '/palm-reading', label: t.nav.palmReading, icon: Hand },
     { href: '/kundali', label: t.nav.kundali, icon: Compass },
     { href: '/assistant', label: t.nav.assistant, icon: Bot },
+    { href: '/pricing', label: t.nav.pricing, icon: CreditCard },
     { href: '/dashboard', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/reports', label: t.nav.reports, icon: Bookmark },
   ];

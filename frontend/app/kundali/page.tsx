@@ -33,7 +33,7 @@ export default function KundaliPage() {
 
   // Form State
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || 'Sujan Sharma',
+    fullName: user?.fullName || 'Unish Gautam',
     nwaranName: user?.nwaranName || 'शिव प्रसाद',
     dateOfBirth: user?.dateOfBirth || '1996-05-14',
     timeOfBirth: user?.timeOfBirth || '06:30',
@@ -238,7 +238,7 @@ export default function KundaliPage() {
                   required
                   value={formData.fullName}
                   onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  placeholder="e.g. Sujan Sharma"
+                  placeholder="e.g. Unish Gautam"
                   className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-navy-700 bg-gray-50 dark:bg-navy-800 text-gray-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
                 />
               </div>

@@ -83,7 +83,7 @@ export class KundaliService {
       // If demo seed is queried, generate one on the fly
       const fallback = KundaliService.generate({
         userId: 'usr-demo-01',
-        fullName: 'Sujan Sharma',
+        fullName: 'Unish Gautam',
         nwaranName: 'शिव प्रसाद',
         dateOfBirth: '1996-05-14',
         timeOfBirth: '06:30',

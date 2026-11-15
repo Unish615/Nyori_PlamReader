@@ -6,6 +6,9 @@ import { assistantRouter } from './assistantRoutes.js';
 import { userRouter } from './userRoutes.js';
 import { reportsRouter } from './reportsRoutes.js';
 import { adminRouter } from './adminRoutes.js';
+import { planRouter } from './planRoutes.js';
+import { paymentRouter } from './paymentRoutes.js';
+import { creditRouter } from './creditRoutes.js';
 import { NEPAL_DISTRICTS } from '../utils/nepalLocations.js';
 
 export const apiRouter = Router();
@@ -17,6 +20,9 @@ apiRouter.use('/assistant', assistantRouter);
 apiRouter.use('/user', userRouter);
 apiRouter.use('/reports', reportsRouter);
 apiRouter.use('/admin', adminRouter);
+apiRouter.use('/plans', planRouter);
+apiRouter.use('/payments', paymentRouter);
+apiRouter.use('/credits', creditRouter);
 
 // Public helper route to fetch all Nepal locations
 apiRouter.get('/locations/nepal', (req, res) => {

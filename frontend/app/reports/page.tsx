@@ -41,7 +41,7 @@ export default function ReportsPage() {
           {
             id: 'kun-01',
             type: 'kundali',
-            title: isNe ? 'कुण्डली: Sujan Sharma (शिव प्रसाद)' : 'Kundali: Sujan Sharma',
+            title: isNe ? 'कुण्डली: Unish Gautam (शिव प्रसाद)' : 'Kundali: Unish Gautam',
             date: new Date().toISOString(),
             details: { lagna: 'वृष', rashi: 'मीन', nakshatra: 'रेवती' }
           },

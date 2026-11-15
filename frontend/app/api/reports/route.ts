@@ -5,7 +5,7 @@ export async function GET() {
     {
       id: 'kun-01',
       type: 'kundali',
-      title: 'कुण्डली: Sujan Sharma (शिव प्रसाद)',
+      title: 'कुण्डली: Unish Gautam (शिव प्रसाद)',
       date: new Date().toISOString(),
       details: { lagna: 'वृष', rashi: 'मीन', nakshatra: 'रेवती' }
     },

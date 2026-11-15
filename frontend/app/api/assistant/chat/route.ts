@@ -1,8 +1,21 @@
 import { NextResponse } from 'next/server';
+import { store } from '@/lib/store';
 
 export async function POST(req: Request) {
   try {
-    const { message, language } = await req.json();
+    const { message, language, userId = 'usr-demo-01' } = await req.json();
+
+    // Verify AI Question credits before generating response
+    const userCredits = store.getUserCredits(userId);
+    if (userCredits.aiQuestions <= 0) {
+      return NextResponse.json({
+        success: false,
+        outOfCredits: true,
+        error: 'तपाईंको AI प्रश्न सोध्ने कोटा सकिएको छ। कृपया योजना अपग्रेड गर्नुहोस्।',
+        errorEn: 'Your AI assistant question credits have been exhausted. Please upgrade your plan.'
+      }, { status: 403 });
+    }
+
     const isNe = language === 'ne' || /[\u0900-\u097F]/.test(message || '');
     const queryLower = (message || '').toLowerCase();
 
@@ -27,13 +40,17 @@ export async function POST(req: Request) {
       }
     }
 
+    // Deduct credit only on successful reply generation
+    const deduction = store.checkAndDeductCredit(userId, 'ai_question');
+
     return NextResponse.json({
       success: true,
       data: {
         conversationId: `conv-${Date.now()}`,
         userMessage: { id: `msg-${Date.now()}-u`, text: message },
         assistantMessage: { id: `msg-${Date.now()}-a`, text: reply }
-      }
+      },
+      remainingCredits: deduction.remaining
     });
   } catch (err: any) {
     return NextResponse.json({ success: false, error: err.message }, { status: 400 });

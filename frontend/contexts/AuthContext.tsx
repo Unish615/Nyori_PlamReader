@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const defaultUser: User = {
         id: 'usr-demo-01',
         email: 'demo@nyoriachina.com',
-        fullName: 'Sujan Sharma',
+        fullName: 'Unish Gautam',
         nwaranName: 'शिव प्रसाद',
         role: 'user',
         preferredLanguage: 'ne',

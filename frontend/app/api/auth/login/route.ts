@@ -8,7 +8,7 @@ export async function POST(req: Request) {
       user: {
         id: 'usr-demo-01',
         email: email || 'demo@nyoriachina.com',
-        fullName: email ? email.split('@')[0] : 'Sujan Sharma',
+        fullName: email ? email.split('@')[0] : 'Unish Gautam',
         nwaranName: 'शिव प्रसाद',
         role: email?.includes('admin') ? 'admin' : 'user',
         preferredLanguage: 'ne'

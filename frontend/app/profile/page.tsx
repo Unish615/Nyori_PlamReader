@@ -22,7 +22,7 @@ export default function ProfilePage() {
   const isNe = language === 'ne';
 
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || 'Sujan Sharma',
+    fullName: user?.fullName || 'Unish Gautam',
     nwaranName: user?.nwaranName || 'शिव प्रसाद',
     email: user?.email || 'demo@nyoriachina.com',
     dateOfBirth: user?.dateOfBirth || '1996-05-14',
