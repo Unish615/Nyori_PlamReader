@@ -44,14 +44,15 @@ export default function DashboardPage() {
   });
   const [payments, setPayments] = useState<any[]>([]);
   const [stats, setStats] = useState({
-    palms: 1,
-    kundalis: 1,
-    chats: 3,
-    saved: 2
+    palms: 0,
+    kundalis: 0,
+    chats: 0,
+    saved: 0
   });
 
   const loadDashboardData = () => {
-    const currentUserId = user?.id || 'usr-demo-01';
+    if (!user) return;
+    const currentUserId = user.id;
 
     // 1. Fetch credits & subscription
     fetch(`/api/credits?userId=${currentUserId}`)
@@ -77,7 +78,7 @@ export default function DashboardPage() {
     // 3. Fetch reports
     fetch('/api/reports', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('nyoria_token') || 'jwt-usr-demo-01'}`
+        'Authorization': `Bearer ${localStorage.getItem('nyoria_token') || ''}`
       }
     })
       .then(res => res.json())
@@ -87,31 +88,16 @@ export default function DashboardPage() {
           const p = data.data.filter((r: any) => r.type === 'palm').length;
           const k = data.data.filter((r: any) => r.type === 'kundali').length;
           setStats({
-            palms: Math.max(1, p),
-            kundalis: Math.max(1, k),
-            chats: 4,
-            saved: data.data.length || 2
+            palms: p,
+            kundalis: k,
+            chats: 0,
+            saved: data.data.length
           });
         }
       })
       .catch(err => {
-        console.warn('Reports fetch error fallback', err);
-        setReports([
-          {
-            id: 'kun-01',
-            type: 'kundali',
-            title: isNe ? 'कुण्डली: Unish Gautam (शिव प्रसाद)' : 'Kundali: Unish Gautam',
-            date: new Date().toISOString(),
-            details: { lagna: 'वृष', rashi: 'मीन', nakshatra: 'रेवती' }
-          },
-          {
-            id: 'plm-01',
-            type: 'palm',
-            title: isNe ? 'हस्तरेखा परीक्षण (दायाँ हात)' : 'Palm Reading (Right Hand)',
-            date: new Date(Date.now() - 86400000).toISOString(),
-            details: { handType: 'right', quality: 'verified' }
-          }
-        ]);
+        console.warn('Reports fetch error', err);
+        setReports([]);
       });
   };
 
@@ -145,7 +131,7 @@ export default function DashboardPage() {
             <span>{isNe ? 'व्यक्तिगत ड्यासबोर्ड' : 'Personal Dashboard'}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold font-devanagari">
-            {t.dashboard.welcome}, {user?.fullName || 'Unish Gautam'}!
+            {t.dashboard.welcome}{user?.fullName ? `, ${user.fullName}` : ''}!
           </h1>
           <p className="text-xs sm:text-sm text-gray-300 font-devanagari">
             {user?.nwaranName && `${isNe ? 'न्वारनको नाम' : 'Ceremony Name'}: ${user.nwaranName} • `}

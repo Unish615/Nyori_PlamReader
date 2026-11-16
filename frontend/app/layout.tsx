@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ne" className="dark scroll-smooth">
-      <body className="min-h-screen bg-bgLight dark:bg-bgDark text-navy-900 dark:text-gray-100 antialiased transition-colors duration-300 flex flex-col justify-between">
+      <body className="min-h-screen bg-bgLight dark:bg-bgDark text-navy-900 dark:text-gray-100 antialiased transition-colors duration-300 flex flex-col justify-between font-sans">
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>

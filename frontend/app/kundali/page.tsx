@@ -33,15 +33,15 @@ export default function KundaliPage() {
 
   // Form State
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || 'Unish Gautam',
-    nwaranName: user?.nwaranName || 'शिव प्रसाद',
-    dateOfBirth: user?.dateOfBirth || '1996-05-14',
-    timeOfBirth: user?.timeOfBirth || '06:30',
+    fullName: user?.fullName || '',
+    nwaranName: user?.nwaranName || '',
+    dateOfBirth: user?.dateOfBirth || '',
+    timeOfBirth: user?.timeOfBirth || '',
     gender: 'male',
     country: 'Nepal',
-    district: user?.district || 'Kathmandu',
-    city: user?.city || 'Kathmandu',
-    birthplace: 'Pashupatinath, Kathmandu'
+    district: user?.district || '',
+    city: user?.city || '',
+    birthplace: ''
   });
 
   const [districtSearch, setDistrictSearch] = useState('');

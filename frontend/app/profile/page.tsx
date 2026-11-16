@@ -22,13 +22,13 @@ export default function ProfilePage() {
   const isNe = language === 'ne';
 
   const [formData, setFormData] = useState({
-    fullName: user?.fullName || 'Unish Gautam',
-    nwaranName: user?.nwaranName || 'शिव प्रसाद',
-    email: user?.email || 'demo@nyoriachina.com',
-    dateOfBirth: user?.dateOfBirth || '1996-05-14',
-    timeOfBirth: user?.timeOfBirth || '06:30',
-    district: user?.district || 'Kathmandu',
-    city: user?.city || 'Kathmandu'
+    fullName: user?.fullName || '',
+    nwaranName: user?.nwaranName || '',
+    email: user?.email || '',
+    dateOfBirth: user?.dateOfBirth || '',
+    timeOfBirth: user?.timeOfBirth || '',
+    district: user?.district || '',
+    city: user?.city || ''
   });
 
   const [savedSuccess, setSavedSuccess] = useState(false);

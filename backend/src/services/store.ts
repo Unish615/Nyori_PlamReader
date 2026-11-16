@@ -284,33 +284,12 @@ class MemoryStore {
   activityLogs: ActivityLogRecord[] = [];
 
   constructor() {
-    // 1. Seed initial users with default name "Unish Gautam"
-    const defaultUser: UserRecord = {
-      id: 'usr-demo-01',
-      email: 'unish@nyoriachina.com',
-      passwordHash: 'demo1234',
-      fullName: 'Unish Gautam',
-      nwaranName: 'शिव प्रसाद',
-      dateOfBirth: '1996-05-14',
-      timeOfBirth: '06:30',
-      gender: 'male',
-      country: 'Nepal',
-      district: 'Kathmandu',
-      city: 'Kathmandu',
-      birthplace: 'Pashupatinath, Kathmandu',
-      role: 'user',
-      preferredLanguage: 'ne',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    this.users.set(defaultUser.id, defaultUser);
-
     const adminUser: UserRecord = {
       id: 'usr-admin-01',
       email: 'admin@nyoriachina.com',
       passwordHash: 'admin1234',
       fullName: 'Admin Jyotish',
-      nwaranName: 'गुरुदेव',
+      nwaranName: '',
       dateOfBirth: '1985-01-01',
       timeOfBirth: '12:00',
       gender: 'other',
@@ -328,27 +307,7 @@ class MemoryStore {
     // 2. Initialize plans
     INITIAL_PLANS.forEach(p => this.plans.set(p.id, p));
 
-    // 3. Initialize default Free subscription & credits for demo user
-    this.userSubscriptions.set(defaultUser.id, {
-      id: `sub-demo`,
-      userId: defaultUser.id,
-      planId: 'plan-free',
-      planName: 'Free Plan',
-      status: 'active',
-      billingPeriod: 'free',
-      startDate: new Date().toISOString(),
-      expiryDate: null
-    });
-
-    this.userCredits.set(defaultUser.id, {
-      userId: defaultUser.id,
-      aiQuestions: 3,
-      palmReadings: 1,
-      kundalis: 1,
-      lastResetDate: new Date().toISOString()
-    });
-
-    // 4. Initialize QR settings
+    // 3. Initialize QR settings
     this.qrSettings = {
       esewaQrUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%2341A124"/><text x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" font-size="22" font-weight="bold" fill="white">eSewa QR</text><text x="50%25" y="65%25" dominant-baseline="middle" text-anchor="middle" font-size="14" fill="white">Unish Gautam</text></svg>',
       esewaPhone: '9841000000',

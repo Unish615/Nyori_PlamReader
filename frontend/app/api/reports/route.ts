@@ -1,23 +1,8 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const reports = [
-    {
-      id: 'kun-01',
-      type: 'kundali',
-      title: 'कुण्डली: Unish Gautam (शिव प्रसाद)',
-      date: new Date().toISOString(),
-      details: { lagna: 'वृष', rashi: 'मीन', nakshatra: 'रेवती' }
-    },
-    {
-      id: 'plm-01',
-      type: 'palm',
-      title: 'हस्तरेखा परीक्षण (दायाँ हात)',
-      date: new Date(Date.now() - 86400000).toISOString(),
-      details: { handType: 'right', quality: 'verified' }
-    }
-  ];
-  return NextResponse.json({ success: true, data: reports });
+  // Empty initial reports list so clean fresh users have no dummy data
+  return NextResponse.json({ success: true, data: [] });
 }
 
 export async function DELETE() {

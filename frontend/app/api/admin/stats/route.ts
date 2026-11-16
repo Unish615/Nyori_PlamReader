@@ -5,13 +5,13 @@ export async function GET() {
     success: true,
     data: {
       metrics: {
-        totalUsers: 24,
-        totalKundalis: 48,
-        totalPalms: 62,
-        totalChats: 130,
+        totalUsers: 1,
+        totalKundalis: 0,
+        totalPalms: 0,
+        totalChats: 0,
         systemHealth: '100% Operational',
-        astronomyEngine: 'Lahiri Ayanamsa v2026 Active',
-        aiVisionEngine: 'Gemini Vision & Vedic Rules Active'
+        astronomyEngine: 'Lahiri Ayanamsa Active',
+        aiVisionEngine: 'Vedic AI Vision Active'
       },
       recentActivity: []
     }

@@ -40,13 +40,13 @@ export default function AdminPage() {
   // Stats
   const [stats, setStats] = useState<any>({
     metrics: {
-      totalUsers: 25,
-      totalKundalis: 48,
-      totalPalms: 62,
-      totalChats: 130,
+      totalUsers: 1,
+      totalKundalis: 0,
+      totalPalms: 0,
+      totalChats: 0,
       systemHealth: '100% Operational',
-      astronomyEngine: 'Lahiri Ayanamsa v2026 Active',
-      aiVisionEngine: 'Gemini Vision & Vedic Rules Active'
+      astronomyEngine: 'Lahiri Ayanamsa Active',
+      aiVisionEngine: 'Vedic AI Vision Active'
     }
   });
 
@@ -445,7 +445,7 @@ export default function AdminPage() {
                     return (
                       <tr key={p.id} className="hover:bg-gray-50/50 dark:hover:bg-navy-800/40">
                         <td className="px-3 py-3 font-semibold text-gray-900 dark:text-white">
-                          <div>{p.userName || 'Unish Gautam'}</div>
+                          <div>{p.userName || (isNe ? 'प्रयोगकर्ता' : 'User')}</div>
                           <span className="text-[10px] text-gray-400 font-mono block">{p.userEmail}</span>
                         </td>
                         <td className="px-3 py-3 font-bold text-royal-600 dark:text-gold-400">{p.planName}</td>
@@ -987,10 +987,9 @@ export default function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-navy-800">
-                {[
-                  { fullName: 'Unish Gautam', nwaranName: 'शिव प्रसाद', email: 'unish@nyoriachina.com', role: 'user', createdAt: '2026-11-15' },
+                {(usersList.length > 0 ? usersList : [
                   { fullName: 'Admin Jyotish', nwaranName: 'गुरुदेव', email: 'admin@nyoriachina.com', role: 'admin', createdAt: '2026-11-01' }
-                ].map((u: any, idx: number) => (
+                ]).map((u: any, idx: number) => (
                   <tr key={idx} className="hover:bg-gray-50/50 dark:hover:bg-navy-800/40">
                     <td className="px-4 py-3 font-semibold text-gray-900 dark:text-white">{u.fullName}</td>
                     <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{u.nwaranName || '-'}</td>

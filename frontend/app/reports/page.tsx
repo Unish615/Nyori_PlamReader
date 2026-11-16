@@ -36,23 +36,8 @@ export default function ReportsPage() {
         }
       })
       .catch(err => {
-        // Fallback demo reports
-        setReports([
-          {
-            id: 'kun-01',
-            type: 'kundali',
-            title: isNe ? 'कुण्डली: Unish Gautam (शिव प्रसाद)' : 'Kundali: Unish Gautam',
-            date: new Date().toISOString(),
-            details: { lagna: 'वृष', rashi: 'मीन', nakshatra: 'रेवती' }
-          },
-          {
-            id: 'plm-01',
-            type: 'palm',
-            title: isNe ? 'हस्तरेखा परीक्षण (दायाँ हात)' : 'Palm Reading (Right Hand)',
-            date: new Date(Date.now() - 86400000).toISOString(),
-            details: { handType: 'right', quality: 'verified' }
-          }
-        ]);
+        console.warn('Reports fetch error', err);
+        setReports([]);
       });
   }, [isNe]);
 

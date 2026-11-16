@@ -13,8 +13,8 @@ export default function LoginPage() {
   const router = useRouter();
   const isNe = language === 'ne';
 
-  const [email, setEmail] = useState('demo@nyoriachina.com');
-  const [password, setPassword] = useState('demo1234');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

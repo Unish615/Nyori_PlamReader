@@ -43,23 +43,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setToken(savedToken);
       } catch (e) {
         console.error(e);
+        setUser(null);
+        setToken(null);
       }
     } else {
-      // Default initial mock demo user so user can explore immediately
-      const defaultUser: User = {
-        id: 'usr-demo-01',
-        email: 'demo@nyoriachina.com',
-        fullName: 'Unish Gautam',
-        nwaranName: 'शिव प्रसाद',
-        role: 'user',
-        preferredLanguage: 'ne',
-        dateOfBirth: '1996-05-14',
-        timeOfBirth: '06:30',
-        district: 'Kathmandu',
-        city: 'Kathmandu'
-      };
-      setUser(defaultUser);
-      setToken('jwt-usr-demo-01');
+      setUser(null);
+      setToken(null);
     }
     setIsLoading(false);
   }, []);
