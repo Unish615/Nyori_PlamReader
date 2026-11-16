@@ -16,12 +16,13 @@ import {
   Download, 
   Share2, 
   MessageSquare, 
-  Sparkles,
   Info,
   ChevronRight,
-  Hand
+  Hand,
+  Compass
 } from 'lucide-react';
 import Link from 'next/link';
+import { CreditManager } from '../../lib/creditManager';
 
 export default function PalmReadingPage() {
   const { language, t } = useLanguage();
@@ -130,6 +131,13 @@ export default function PalmReadingPage() {
   const handleAnalyze = async () => {
     if (!previewUrl) return;
 
+    if (!CreditManager.hasCredit('palm_reading')) {
+      setQualityError(isNe 
+        ? 'तपाईंको हस्तरेखा परीक्षण क्रेडिट सकिएको छ। कृपया मूल्य निर्धारण (Pricing) पृष्ठबाट प्लान अपग्रेड गर्नुहोस्।' 
+        : 'You have run out of Palm Reading credits. Please upgrade your plan on the Pricing page.');
+      return;
+    }
+
     setIsAnalyzing(true);
     setQualityError(null);
 
@@ -154,11 +162,13 @@ export default function PalmReadingPage() {
         setQualityError(data?.quality?.messageNe || data?.quality?.messageEn || data?.error || 'Image quality check failed.');
       } else {
         setReadingResult(data.reading);
+        CreditManager.deductCredit('palm_reading');
       }
     } catch (err: any) {
       console.warn('Backend connection issue, falling back to instant client evaluation', err);
       // Fallback response so user never gets stuck
       setTimeout(() => {
+        CreditManager.deductCredit('palm_reading');
         setReadingResult({
           id: `plm-${Date.now()}`,
           handType,
@@ -370,7 +380,7 @@ export default function PalmReadingPage() {
                     disabled={isAnalyzing}
                     className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 hover:from-royal-500 hover:to-royal-600 text-white text-xs font-bold shadow-lg shadow-royal-600/30 transition-transform hover:scale-102 disabled:opacity-50"
                   >
-                    <Sparkles className="w-4 h-4 text-gold-400" />
+                    <Compass className="w-4 h-4 text-gold-400" />
                     <span>{isAnalyzing ? t.palm.analyzing : (isNe ? 'हस्तरेखा विश्लेषण सुरु गर्नुहोस्' : 'Analyze Palm Lines')}</span>
                   </button>
                 </div>
@@ -530,7 +540,7 @@ export default function PalmReadingPage() {
               {/* General Summary Card */}
               <div className="bg-white dark:bg-navy-900 p-6 sm:p-8 rounded-3xl border border-gray-200 dark:border-navy-800 shadow-xl">
                 <h3 className="text-base font-bold text-gray-900 dark:text-gold-400 mb-3 font-devanagari flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-gold-500" />
+                  <Hand className="w-4 h-4 text-gold-500" />
                   <span>{t.palm.generalSummary}</span>
                 </h3>
                 <p className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed font-devanagari">

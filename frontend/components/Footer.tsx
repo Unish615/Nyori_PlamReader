@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
-import { Compass, ShieldCheck, Heart, Sparkles } from 'lucide-react';
+import { Compass, ShieldCheck, Heart } from 'lucide-react';
 
 export function Footer() {
   const { language, t } = useLanguage();
@@ -31,7 +31,7 @@ export function Footer() {
                 : 'Discover What Your Hands Reveal with AI-powered Vedic Palmistry and astronomical kundali calculations.'}
             </p>
             <div className="flex items-center gap-2 text-xs text-gold-600 dark:text-gold-400">
-              <Sparkles className="w-3.5 h-3.5" />
+              <Compass className="w-3.5 h-3.5" />
               <span>Lahiri Sidereal Ayanamsa Engine</span>
             </div>
           </div>

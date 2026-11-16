@@ -4,7 +4,6 @@ import React from 'react';
 import Link from 'next/link';
 import { useLanguage } from '../contexts/LanguageContext';
 import { 
-  Sparkles, 
   Hand, 
   Compass, 
   Bot, 
@@ -15,7 +14,6 @@ import {
   CheckCircle2, 
   ArrowRight,
   Sun,
-  Star,
   Globe2
 } from 'lucide-react';
 
@@ -102,7 +100,7 @@ export default function HomePage() {
         
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-royal-600/10 dark:bg-royal-600/20 border border-royal-600/30 dark:border-gold-500/30 text-royal-700 dark:text-gold-400 text-xs font-semibold mb-6 shadow-sm">
-          <Sparkles className="w-4 h-4 text-gold-500 animate-spin" style={{ animationDuration: '6s' }} />
+          <Compass className="w-4 h-4 text-gold-500" />
           <span>{t.hero.badge}</span>
         </div>
 

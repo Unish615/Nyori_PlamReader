@@ -5,9 +5,8 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { PaymentModal } from '../../components/PaymentModal';
 import { 
-  Sparkles, 
   Check, 
-  Star, 
+  Crown, 
   ShieldCheck, 
   Clock, 
   Compass, 
@@ -84,7 +83,7 @@ export default function PricingPage() {
         {/* Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-royal-600/10 dark:bg-royal-600/20 text-royal-600 dark:text-gold-400 text-xs font-semibold tracking-wide border border-royal-600/20">
-            <Sparkles className="w-3.5 h-3.5 text-gold-500" />
+            <Compass className="w-3.5 h-3.5 text-gold-500" />
             <span className="font-devanagari">{isNe ? 'पारदर्शी परम्परागत सेवा शुल्क' : 'Vedic Wisdom & AI Precision'}</span>
           </div>
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-gray-900 dark:text-white font-devanagari">
@@ -124,7 +123,7 @@ export default function PricingPage() {
                 {/* Recommended Badge */}
                 {isRec && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-gold-500 to-amber-500 text-navy-950 text-[11px] font-black uppercase tracking-wider shadow-md flex items-center gap-1 font-devanagari">
-                    <Star className="w-3.5 h-3.5 fill-navy-950" />
+                    <Crown className="w-3.5 h-3.5 fill-navy-950" />
                     <span>{t.pricing.recommended}</span>
                   </div>
                 )}

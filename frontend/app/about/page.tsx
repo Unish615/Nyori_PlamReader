@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Compass, Sparkles, Heart, ShieldCheck, Award } from 'lucide-react';
+import { Compass, Heart, ShieldCheck, Award } from 'lucide-react';
 
 export default function AboutPage() {
   const { language } = useLanguage();

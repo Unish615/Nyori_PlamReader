@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Compass, Mail, Lock, ArrowRight, Sparkles } from 'lucide-react';
+import { Compass, Mail, Lock, ArrowRight } from 'lucide-react';
 
 export default function LoginPage() {
   const { language, t } = useLanguage();

@@ -7,7 +7,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 import { 
-  Sparkles, 
+  Home, 
   Hand, 
   Compass, 
   Bot, 
@@ -32,7 +32,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: '/', label: t.nav.home, icon: Sparkles },
+    { href: '/', label: t.nav.home, icon: Home },
     { href: '/palm-reading', label: t.nav.palmReading, icon: Hand },
     { href: '/kundali', label: t.nav.kundali, icon: Compass },
     { href: '/assistant', label: t.nav.assistant, icon: Bot },

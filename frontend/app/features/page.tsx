@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { Hand, Compass, Mic, FileText, Globe, Shield, Sparkles } from 'lucide-react';
+import { Hand, Compass, Mic, FileText, Globe, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 export default function FeaturesPage() {

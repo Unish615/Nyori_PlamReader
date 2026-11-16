@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { CreditManager } from '../../lib/creditManager';
 import Link from 'next/link';
 import { 
   LayoutDashboard, 
@@ -15,7 +16,6 @@ import {
   Download, 
   Trash2, 
   Plus, 
-  Sparkles,
   ChevronRight,
   User as UserIcon,
   ShieldCheck,
@@ -51,31 +51,50 @@ export default function DashboardPage() {
   });
 
   const loadDashboardData = () => {
-    if (!user) return;
-    const currentUserId = user.id;
+    // 1. Instant robust local load (works for guests & logged in users alike)
+    const localCreds = CreditManager.getCredits(user?.id);
+    const localSub = CreditManager.getSubscription(user?.id);
+    const localPayments = CreditManager.getPayments(user?.id);
 
-    // 1. Fetch credits & subscription
+    setCredits(localCreds);
+    setSubscription(localSub);
+    setPayments(localPayments);
+
+    const currentUserId = user?.id || 'usr-client';
+
+    // 2. Fetch server credits & subscription sync
     fetch(`/api/credits?userId=${currentUserId}`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          if (data.credits) setCredits(data.credits);
-          if (data.subscription) setSubscription(data.subscription);
+          if (data.credits) {
+            setCredits(data.credits);
+            CreditManager.saveCredits(data.credits, user?.id);
+          }
+          if (data.subscription) {
+            setSubscription(data.subscription);
+            CreditManager.saveSubscription(data.subscription, user?.id);
+          }
         }
       })
       .catch(() => {});
 
-    // 2. Fetch user payment history
+    // 3. Fetch server payment history and merge seamlessly
     fetch(`/api/payments/my?userId=${currentUserId}`)
       .then(res => res.json())
       .then(data => {
         if (data.success && Array.isArray(data.payments)) {
-          setPayments(data.payments);
+          // Merge unique by transactionReference or id
+          const map = new Map();
+          localPayments.forEach(p => map.set(p.transactionReference.toLowerCase(), p));
+          data.payments.forEach((p: any) => map.set(p.transactionReference.toLowerCase(), p));
+          const merged = Array.from(map.values()).sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+          setPayments(merged);
         }
       })
       .catch(() => {});
 
-    // 3. Fetch reports
+    // 4. Fetch reports
     fetch('/api/reports', {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('nyoria_token') || ''}`
@@ -127,7 +146,7 @@ export default function DashboardPage() {
         
         <div className="space-y-1.5 z-10">
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-gold-500/20 text-gold-300 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5" />
+            <Compass className="w-3.5 h-3.5" />
             <span>{isNe ? 'व्यक्तिगत ड्यासबोर्ड' : 'Personal Dashboard'}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold font-devanagari">

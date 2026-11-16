@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useAuth } from '../contexts/AuthContext';
+import { CreditManager } from '../lib/creditManager';
 import { 
   X, 
   Upload, 
@@ -119,20 +120,30 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
 
     setLoading(true);
 
+    const paymentRecord = {
+      id: `pay-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      userId: user?.id || 'usr-client',
+      userName: user?.fullName || (user?.email ? user.email.split('@')[0] : 'Valued User'),
+      userEmail: user?.email || 'user@nyoriachina.com',
+      planId: plan.id,
+      planName: isNe ? plan.nameNe : plan.nameEn,
+      amountNpr: plan.priceNpr,
+      paymentMethod,
+      transactionReference: transactionRef.trim(),
+      screenshotUrl: screenshotPreview,
+      note: note.trim() || undefined,
+      status: 'pending' as const,
+      createdAt: new Date().toISOString()
+    };
+
+    // 1. Immediately persist to robust client storage so user request never disappears
+    CreditManager.addPayment(paymentRecord);
+
     try {
       const res = await fetch('/api/payments/request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id || 'usr-demo-01',
-          userName: user?.fullName || 'Unish Gautam',
-          userEmail: user?.email || 'unish@nyoriachina.com',
-          planId: plan.id,
-          paymentMethod,
-          transactionReference: transactionRef.trim(),
-          screenshotUrl: screenshotPreview,
-          note: note.trim() || undefined
-        })
+        body: JSON.stringify(paymentRecord)
       });
 
       const data = await res.json();

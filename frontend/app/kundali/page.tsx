@@ -8,7 +8,6 @@ import { AudioPlayerToolbar } from '../../components/AudioPlayerToolbar';
 import { exportElementToPdf } from '../../lib/pdfExport';
 import { 
   Compass, 
-  Sparkles, 
   Download, 
   Share2, 
   Search, 
@@ -20,11 +19,12 @@ import {
   ShieldAlert, 
   ChevronRight,
   Flame,
-  Star,
+  Award,
   Activity,
   Layers
 } from 'lucide-react';
 import Link from 'next/link';
+import { CreditManager } from '../../lib/creditManager';
 
 export default function KundaliPage() {
   const { language, t } = useLanguage();
@@ -87,6 +87,14 @@ export default function KundaliPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!CreditManager.hasCredit('kundali')) {
+      alert(isNe 
+        ? 'तपाईंको कुण्डली निर्माण क्रेडिट सकिएको छ। कृपया मूल्य निर्धारण (Pricing) पृष्ठबाट नयाँ प्लान खरिद गर्नुहोस्।' 
+        : 'You have run out of Kundali generation credits. Please upgrade your plan on the Pricing page.');
+      return;
+    }
+
     setIsCalculating(true);
 
     try {
@@ -102,12 +110,14 @@ export default function KundaliPage() {
       const data = await res.json();
       if (res.ok && data.success) {
         setKundaliResult(data.data);
+        CreditManager.deductCredit('kundali');
       } else {
         alert(data.error || 'Kundali calculation error.');
       }
     } catch (err) {
       console.warn('Backend offline fallback for Kundali calculation', err);
       // Instant deterministic client fallback
+      CreditManager.deductCredit('kundali');
       setKundaliResult({
         id: `kun-${Date.now()}`,
         profile: formData,
@@ -688,7 +698,7 @@ export default function KundaliPage() {
                 {/* Yogas Card */}
                 <div className="p-6 bg-white dark:bg-navy-900 rounded-3xl border border-gray-200 dark:border-navy-800 shadow-xl space-y-3">
                   <h4 className="text-sm font-bold text-gray-900 dark:text-white font-devanagari flex items-center gap-2">
-                    <Star className="w-4 h-4 text-gold-500" />
+                    <Award className="w-4 h-4 text-gold-500" />
                     <span>{t.kundali.yogasCard}</span>
                   </h4>
                   <div className="space-y-2">

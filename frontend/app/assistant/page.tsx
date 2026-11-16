@@ -11,12 +11,12 @@ import {
   Trash2, 
   Volume2, 
   Square, 
-  Sparkles, 
   User, 
   HelpCircle,
   Radio
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
+import { CreditManager } from '../../lib/creditManager';
 
 interface ChatMessage {
   id: string;
@@ -154,6 +154,13 @@ function AssistantContent() {
     const text = (textToSend || inputText).trim();
     if (!text || isLoading) return;
 
+    if (!CreditManager.hasCredit('ai_question')) {
+      alert(isNe 
+        ? 'तपाईंको AI प्रश्न क्रेडिट सकिएको छ। कृपया मूल्य निर्धारण (Pricing) पृष्ठबाट प्लान अपग्रेड गर्नुहोस्।' 
+        : 'You have run out of AI question credits. Please upgrade your plan on the Pricing page.');
+      return;
+    }
+
     const userMsg: ChatMessage = {
       id: `msg-${Date.now()}-u`,
       sender: 'user',
@@ -188,6 +195,7 @@ function AssistantContent() {
         };
         setMessages(prev => [...prev, reply]);
         speakMessage(reply.text);
+        CreditManager.deductCredit('ai_question');
       } else {
         throw new Error('Fallback response needed');
       }
@@ -205,6 +213,7 @@ function AssistantContent() {
       };
       setMessages(prev => [...prev, reply]);
       speakMessage(reply.text);
+      CreditManager.deductCredit('ai_question');
     } finally {
       setIsLoading(false);
     }
@@ -305,7 +314,7 @@ function AssistantContent() {
 
         {isLoading && (
           <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 pl-11 font-devanagari">
-            <Sparkles className="w-4 h-4 text-gold-500 animate-spin" />
+            <Bot className="w-4 h-4 text-gold-500 animate-pulse" />
             <span>{isNe ? 'AI ले विश्लेषण गर्दैछ...' : 'AI Assistant is thinking...'}</span>
           </div>
         )}
