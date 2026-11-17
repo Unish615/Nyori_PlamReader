@@ -214,15 +214,23 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm overflow-y-auto">
+    <div 
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-sm overflow-y-auto"
+    >
       <div className="relative w-full max-w-xl bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-700 rounded-3xl shadow-2xl p-6 sm:p-8 my-8 text-gray-900 dark:text-gray-100">
         
-        {/* Close Button */}
+        {/* Top Close / Cancel Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-navy-800 transition-colors"
+          type="button"
+          aria-label={isNe ? 'रद्द गर्नुहोस्' : 'Cancel'}
+          className="absolute top-5 right-5 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-white bg-gray-100 hover:bg-gray-200 dark:bg-navy-800 dark:hover:bg-navy-700 transition-colors text-xs font-semibold cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4" />
+          <span>{isNe ? 'रद्द' : 'Cancel'}</span>
         </button>
 
         {/* Header */}
@@ -415,21 +423,33 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
             />
           </div>
 
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading || !!successMsg}
-            className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-royal-600 via-royal-500 to-gold-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-royal-600/25 hover:shadow-royal-600/40 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-devanagari cursor-pointer"
-          >
-            {loading ? (
-              <span>{t.payment.submitting}</span>
-            ) : (
-              <>
-                <ShieldCheck className="w-5 h-5 text-gold-300" />
-                <span>{t.payment.submitBtn}</span>
-              </>
-            )}
-          </button>
+          {/* Action Buttons: Cancel & Submit */}
+          <div className="flex flex-col-reverse sm:flex-row items-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={loading}
+              className="w-full sm:w-1/3 py-3 px-5 rounded-2xl border border-gray-300 dark:border-navy-700 hover:bg-gray-100 dark:hover:bg-navy-800 text-gray-700 dark:text-gray-300 font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 font-devanagari cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+              <span>{isNe ? 'रद्द गर्नुहोस्' : 'Cancel'}</span>
+            </button>
+
+            <button
+              type="submit"
+              disabled={loading || !!successMsg}
+              className="w-full sm:w-2/3 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-royal-600 via-royal-500 to-gold-500 text-white font-bold text-xs sm:text-sm shadow-xl shadow-royal-600/25 hover:shadow-royal-600/40 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-devanagari cursor-pointer"
+            >
+              {loading ? (
+                <span>{t.payment.submitting}</span>
+              ) : (
+                <>
+                  <ShieldCheck className="w-4 h-4 text-gold-300" />
+                  <span>{t.payment.submitBtn}</span>
+                </>
+              )}
+            </button>
+          </div>
 
           {/* Instant Test Activation Option */}
           <div className="pt-2 text-center">
