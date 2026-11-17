@@ -38,6 +38,63 @@ export interface PaymentRecord {
   approvedAt?: string;
 }
 
+export const PLAN_CONFIGS: Record<string, {
+  id: string;
+  nameEn: string;
+  nameNe: string;
+  billingPeriod: string;
+  priceNpr: number;
+  aiQuestions: number;
+  palmReadings: number;
+  kundalis: number;
+  validityDays: number | null;
+}> = {
+  'plan-free': {
+    id: 'plan-free',
+    nameEn: 'Free Plan',
+    nameNe: 'निःशुल्क योजना',
+    billingPeriod: 'free',
+    priceNpr: 0,
+    aiQuestions: 3,
+    palmReadings: 1,
+    kundalis: 1,
+    validityDays: null
+  },
+  'plan-basic': {
+    id: 'plan-basic',
+    nameEn: 'Basic Plan',
+    nameNe: 'आधारभूत योजना',
+    billingPeriod: 'one_time',
+    priceNpr: 100,
+    aiQuestions: 30,
+    palmReadings: 3,
+    kundalis: 2,
+    validityDays: 365
+  },
+  'plan-premium': {
+    id: 'plan-premium',
+    nameEn: 'Premium Plan',
+    nameNe: 'प्रिमियम योजना',
+    billingPeriod: 'monthly',
+    priceNpr: 299,
+    aiQuestions: 200,
+    palmReadings: 10,
+    kundalis: 10,
+    validityDays: 30
+  },
+  'plan-ultimate': {
+    id: 'plan-ultimate',
+    nameEn: 'Ultimate Plan',
+    nameNe: 'अल्टिमेट योजना',
+    billingPeriod: 'monthly',
+    priceNpr: 599,
+    aiQuestions: 600,
+    palmReadings: 30,
+    kundalis: 30,
+    validityDays: 30
+  }
+};
+
 const DEFAULT_CREDITS: UserCredits = {
   aiQuestions: 3,
   palmReadings: 1,
@@ -61,7 +118,10 @@ export const CreditManager = {
     const saved = localStorage.getItem(key) || localStorage.getItem('nyoria_credits');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (typeof parsed.aiQuestions === 'number') {
+          return parsed;
+        }
       } catch (e) {
         console.error(e);
       }
@@ -76,6 +136,7 @@ export const CreditManager = {
     const key = userId ? `nyoria_credits_${userId}` : 'nyoria_credits';
     localStorage.setItem(key, JSON.stringify(credits));
     localStorage.setItem('nyoria_credits', JSON.stringify(credits));
+    window.dispatchEvent(new CustomEvent('nyoria_credits_changed', { detail: credits }));
   },
 
   getSubscription(userId?: string): UserSubscription {
@@ -84,7 +145,10 @@ export const CreditManager = {
     const saved = localStorage.getItem(key) || localStorage.getItem('nyoria_sub');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        if (parsed.planId && parsed.planName) {
+          return parsed;
+        }
       } catch (e) {
         console.error(e);
       }
@@ -98,6 +162,49 @@ export const CreditManager = {
     const key = userId ? `nyoria_sub_${userId}` : 'nyoria_sub';
     localStorage.setItem(key, JSON.stringify(sub));
     localStorage.setItem('nyoria_sub', JSON.stringify(sub));
+    window.dispatchEvent(new CustomEvent('nyoria_subscription_changed', { detail: sub }));
+  },
+
+  activatePlan(planId: string, userId?: string): { subscription: UserSubscription; credits: UserCredits } {
+    const config = PLAN_CONFIGS[planId] || PLAN_CONFIGS['plan-free'];
+    const now = new Date();
+    const expiryDate = config.validityDays 
+      ? new Date(now.getTime() + config.validityDays * 24 * 60 * 60 * 1000).toISOString()
+      : null;
+
+    const subscription: UserSubscription = {
+      planId: config.id,
+      planName: config.nameEn,
+      status: 'active',
+      billingPeriod: config.billingPeriod,
+      startDate: now.toISOString(),
+      expiryDate
+    };
+
+    const credits: UserCredits = {
+      aiQuestions: config.aiQuestions,
+      palmReadings: config.palmReadings,
+      kundalis: config.kundalis,
+      lastResetDate: now.toISOString()
+    };
+
+    CreditManager.saveSubscription(subscription, userId);
+    CreditManager.saveCredits(credits, userId);
+
+    if (typeof window !== 'undefined') {
+      fetch('/api/credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userId || 'usr-client',
+          subscription,
+          credits,
+          planId: config.id
+        })
+      }).catch(() => {});
+    }
+
+    return { subscription, credits };
   },
 
   getPayments(userId?: string): PaymentRecord[] {
@@ -196,29 +303,6 @@ export const CreditManager = {
   },
 
   applyPlanApproval(planId: string, userId?: string) {
-    const quotas: Record<string, { name: string; questions: number; palms: number; kundalis: number; days: number }> = {
-      'plan-basic': { name: 'Basic Plan', questions: 30, palms: 3, kundalis: 2, days: 365 },
-      'plan-premium': { name: 'Premium Plan', questions: 200, palms: 10, kundalis: 10, days: 30 },
-      'plan-ultimate': { name: 'Ultimate Plan', questions: 600, palms: 30, kundalis: 30, days: 30 },
-    };
-
-    const quota = quotas[planId] || { name: 'Premium Plan', questions: 200, palms: 10, kundalis: 10, days: 30 };
-    const creds = CreditManager.getCredits(userId);
-    creds.aiQuestions += quota.questions;
-    creds.palmReadings += quota.palms;
-    creds.kundalis += quota.kundalis;
-    CreditManager.saveCredits(creds, userId);
-
-    const now = new Date();
-    const expiry = new Date(now.getTime() + quota.days * 24 * 60 * 60 * 1000).toISOString();
-    const sub: UserSubscription = {
-      planId,
-      planName: quota.name,
-      status: 'active',
-      billingPeriod: planId === 'plan-basic' ? 'one_time' : 'monthly',
-      startDate: now.toISOString(),
-      expiryDate: expiry
-    };
-    CreditManager.saveSubscription(sub, userId);
+    return CreditManager.activatePlan(planId, userId);
   }
 };

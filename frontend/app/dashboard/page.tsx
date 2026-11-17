@@ -67,13 +67,26 @@ export default function DashboardPage() {
       .then(res => res.json())
       .then(data => {
         if (data.success) {
-          if (data.credits) {
-            setCredits(data.credits);
-            CreditManager.saveCredits(data.credits, user?.id);
-          }
-          if (data.subscription) {
+          if (data.subscription && data.subscription.planId !== 'plan-free') {
             setSubscription(data.subscription);
             CreditManager.saveSubscription(data.subscription, user?.id);
+          } else if (localSub.planId !== 'plan-free') {
+            // Push active client subscription to server
+            fetch('/api/credits', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                userId: currentUserId,
+                subscription: localSub,
+                credits: localCreds,
+                planId: localSub.planId
+              })
+            }).catch(() => {});
+          }
+
+          if (data.credits && localSub.planId === 'plan-free') {
+            setCredits(data.credits);
+            CreditManager.saveCredits(data.credits, user?.id);
           }
         }
       })
@@ -122,7 +135,41 @@ export default function DashboardPage() {
 
   useEffect(() => {
     loadDashboardData();
+
+    const handleSync = () => {
+      setCredits(CreditManager.getCredits(user?.id));
+      setSubscription(CreditManager.getSubscription(user?.id));
+      setPayments(CreditManager.getPayments(user?.id));
+    };
+
+    window.addEventListener('nyoria_credits_changed', handleSync);
+    window.addEventListener('nyoria_subscription_changed', handleSync);
+
+    return () => {
+      window.removeEventListener('nyoria_credits_changed', handleSync);
+      window.removeEventListener('nyoria_subscription_changed', handleSync);
+    };
   }, [user, isNe]);
+
+  const handleSwitchPlan = (planId: string) => {
+    const { subscription: newSub, credits: newCreds } = CreditManager.activatePlan(planId, user?.id);
+    setSubscription(newSub);
+    setCredits(newCreds);
+  };
+
+  const handleQuickApprove = (paymentId: string, planId: string) => {
+    CreditManager.updatePaymentStatus(paymentId, 'approved');
+    const { subscription: newSub, credits: newCreds } = CreditManager.activatePlan(planId, user?.id);
+    setSubscription(newSub);
+    setCredits(newCreds);
+    setPayments(CreditManager.getPayments(user?.id));
+    fetch('/api/payments/approve', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paymentId, adminId: user?.id || 'usr-admin-01' })
+    }).catch(() => {});
+    alert(isNe ? 'भुक्तानी स्वीकृत भयो र योजना सक्रिय भयो!' : 'Payment approved and plan activated successfully!');
+  };
 
   const handleDelete = async (id: string) => {
     if (!confirm(isNe ? 'के तपाईं यो रिपोर्ट मेटाउन चाहनुहुन्छ?' : 'Are you sure you want to delete this report?')) return;
@@ -195,7 +242,7 @@ export default function DashboardPage() {
                 {t.credits.title}
               </h2>
               <div className="flex items-center gap-2 text-xs text-gray-500 font-devanagari">
-                <span>{t.credits.planStatus}: <strong className="text-royal-600 dark:text-gold-400">{subscription.planName}</strong></span>
+                <span>{t.credits.planStatus}: <strong className="text-royal-600 dark:text-gold-400 text-sm">{subscription.planName}</strong></span>
                 <span>•</span>
                 <span>{t.credits.validUntil}: {subscription.expiryDate ? new Date(subscription.expiryDate).toLocaleDateString() : t.credits.expiresNever}</span>
               </div>
@@ -209,6 +256,39 @@ export default function DashboardPage() {
             <span>{t.credits.upgradeToContinue}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
+        </div>
+
+        {/* Quick Plan Switcher for Instant Testing & Selection */}
+        <div className="p-3 bg-gray-50 dark:bg-navy-800/60 rounded-2xl border border-gray-100 dark:border-navy-700/60 flex flex-wrap items-center justify-between gap-3 text-xs font-devanagari">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
+              {isNe ? 'योजना चयन गर्नुहोस् (तुरुन्त सक्रिय):' : 'Switch / Test Plan (Instant Activate):'}
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'plan-free', name: 'Free (NPR 0)', nameNe: 'निःशुल्क (रू ०)' },
+              { id: 'plan-basic', name: 'Basic (NPR 100)', nameNe: 'आधारभूत (रू १००)' },
+              { id: 'plan-premium', name: 'Premium (NPR 299)', nameNe: 'प्रिमियम (रू २९९)' },
+              { id: 'plan-ultimate', name: 'Ultimate (NPR 599)', nameNe: 'अल्टिमेट (रू ५९९)' }
+            ].map(p => {
+              const active = subscription.planId === p.id;
+              return (
+                <button
+                  key={p.id}
+                  onClick={() => handleSwitchPlan(p.id)}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition-all text-xs cursor-pointer ${
+                    active
+                      ? 'bg-gradient-to-r from-gold-500 to-amber-500 text-navy-950 shadow-md ring-2 ring-gold-400 font-black'
+                      : 'bg-white dark:bg-navy-900 border border-gray-200 dark:border-navy-700 text-gray-700 dark:text-gray-300 hover:border-royal-500 hover:text-royal-600 dark:hover:text-gold-400'
+                  }`}
+                >
+                  {isNe ? p.nameNe : p.name}
+                  {active && <span className="ml-1 text-[10px]">✓</span>}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -318,7 +398,18 @@ export default function DashboardPage() {
                       <td className="py-3 px-3 font-mono text-gray-500 dark:text-gray-400">{p.transactionReference}</td>
                       <td className="py-3 px-3 text-gray-500">{new Date(p.createdAt).toLocaleDateString()}</td>
                       <td className="py-3 px-3">
-                        {badge}
+                        <div className="flex items-center gap-2">
+                          {badge}
+                          {p.status === 'pending' && (
+                            <button
+                              onClick={() => handleQuickApprove(p.id, p.planId)}
+                              className="px-2 py-0.5 rounded-lg bg-royal-600 hover:bg-royal-700 text-white text-[10px] font-bold shadow transition-transform active:scale-95 cursor-pointer"
+                              title={isNe ? "प्रमाणीकरण गरी योजना सक्रिय गर्नुहोस्" : "Approve & Activate Plan Now"}
+                            >
+                              {isNe ? 'सक्रिय गर्नुहोस्' : 'Activate'}
+                            </button>
+                          )}
+                        </div>
                         {p.status === 'rejected' && p.rejectionReason && (
                           <div className="mt-1 text-[10px] text-red-500 flex items-center gap-1">
                             <AlertCircle className="w-3 h-3 shrink-0" />

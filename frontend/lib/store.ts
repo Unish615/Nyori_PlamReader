@@ -308,6 +308,20 @@ class MemoryStore {
     return sub;
   }
 
+  setUserSubscription(userId: string, sub: Partial<UserSubscription>): UserSubscription {
+    const current = this.getUserSubscription(userId);
+    const updated = { ...current, ...sub, userId };
+    this.userSubscriptions.set(userId, updated as UserSubscription);
+    return updated as UserSubscription;
+  }
+
+  setUserCredits(userId: string, credits: Partial<UserCredits>): UserCredits {
+    const current = this.getUserCredits(userId);
+    const updated = { ...current, ...credits, userId };
+    this.userCredits.set(userId, updated as UserCredits);
+    return updated as UserCredits;
+  }
+
   getUserCredits(userId: string): UserCredits {
     let credits = this.userCredits.get(userId);
     if (!credits) {

@@ -208,9 +208,27 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
 
         {/* Success Alert */}
         {successMsg && (
-          <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-sm flex items-center gap-3 font-devanagari">
-            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-500" />
-            <span>{successMsg}</span>
+          <div className="mb-6 p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-800 dark:text-emerald-300 text-sm space-y-3 font-devanagari">
+            <div className="flex items-center gap-3">
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-500" />
+              <span>{successMsg}</span>
+            </div>
+            <div className="pt-2 border-t border-emerald-500/20 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs text-emerald-700 dark:text-emerald-400">
+                {isNe ? 'तुरुन्तै परीक्षण गर्न चाहनुहुन्छ?' : 'Want to test credits immediately?'}
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  CreditManager.activatePlan(plan.id, user?.id);
+                  if (onSuccess) onSuccess();
+                  onClose();
+                }}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow transition-all cursor-pointer"
+              >
+                {isNe ? 'तुरुन्त योजना सक्रिय गर्नुहोस्' : 'Instant Activate Plan'}
+              </button>
+            </div>
           </div>
         )}
 
@@ -356,7 +374,7 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
           <button
             type="submit"
             disabled={loading || !!successMsg}
-            className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-royal-600 via-royal-500 to-gold-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-royal-600/25 hover:shadow-royal-600/40 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-devanagari"
+            className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-royal-600 via-royal-500 to-gold-500 text-white font-bold text-sm sm:text-base shadow-xl shadow-royal-600/25 hover:shadow-royal-600/40 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-devanagari cursor-pointer"
           >
             {loading ? (
               <span>{t.payment.submitting}</span>
@@ -367,6 +385,22 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
               </>
             )}
           </button>
+
+          {/* Instant Test Activation Option */}
+          <div className="pt-2 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                CreditManager.activatePlan(plan.id, user?.id);
+                if (onSuccess) onSuccess();
+                alert(isNe ? `${plan.nameNe} र क्रेडिटहरू सफलतापूर्वक सक्रिय भए!` : `${plan.nameEn} and credits activated successfully!`);
+                onClose();
+              }}
+              className="text-xs text-royal-600 dark:text-gold-400 hover:underline font-semibold font-devanagari cursor-pointer"
+            >
+              {isNe ? '⚡ सिधै योजना सक्रिय गरी क्रेडिट परीक्षण गर्नुहोस् (Demo / Test Mode)' : '⚡ Instant Activate Plan & Test Credits (Demo / Test Mode)'}
+            </button>
+          </div>
         </form>
       </div>
     </div>

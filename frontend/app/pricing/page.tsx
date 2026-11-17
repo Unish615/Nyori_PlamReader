@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { PaymentModal } from '../../components/PaymentModal';
+import { CreditManager } from '../../lib/creditManager';
 import { 
   Check, 
   Crown, 
@@ -43,6 +44,11 @@ export default function PricingPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchPlansAndCredits = () => {
+    const localSub = CreditManager.getSubscription(user?.id);
+    if (localSub?.planId) {
+      setCurrentPlanId(localSub.planId);
+    }
+
     Promise.all([
       fetch('/api/plans').then(res => res.json()),
       fetch(`/api/credits?userId=${user?.id || 'usr-demo-01'}`).then(res => res.json())
@@ -51,7 +57,9 @@ export default function PricingPage() {
         setPlans(plansData.plans);
       }
       if (creditsData.success && creditsData.subscription) {
-        setCurrentPlanId(creditsData.subscription.planId);
+        if (creditsData.subscription.planId !== 'plan-free') {
+          setCurrentPlanId(creditsData.subscription.planId);
+        }
       }
       setLoading(false);
     }).catch(() => {
@@ -61,6 +69,9 @@ export default function PricingPage() {
 
   useEffect(() => {
     fetchPlansAndCredits();
+    const handleSubChanged = () => fetchPlansAndCredits();
+    window.addEventListener('nyoria_subscription_changed', handleSubChanged);
+    return () => window.removeEventListener('nyoria_subscription_changed', handleSubChanged);
   }, [user]);
 
   const handleSelectPlan = (plan: SubscriptionPlan) => {
