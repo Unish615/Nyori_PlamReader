@@ -88,11 +88,37 @@ export const PLAN_CONFIGS: Record<string, {
     nameNe: 'अल्टिमेट योजना',
     billingPeriod: 'monthly',
     priceNpr: 599,
-    aiQuestions: 600,
-    palmReadings: 30,
-    kundalis: 30,
+    aiQuestions: 999999, // Unlimited (∞)
+    palmReadings: 999999, // Unlimited (∞)
+    kundalis: 999999, // Unlimited (∞)
     validityDays: 30
   }
+};
+
+export interface PaymentQrSettings {
+  esewaQrUrl: string;
+  esewaPhone: string;
+  esewaName: string;
+  esewaEnabled: boolean;
+  khaltiQrUrl: string;
+  khaltiPhone: string;
+  khaltiName: string;
+  khaltiEnabled: boolean;
+  instructionsEn: string;
+  instructionsNe: string;
+}
+
+const DEFAULT_QR_SETTINGS: PaymentQrSettings = {
+  esewaQrUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%2341A124"/><text x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" font-size="22" font-weight="bold" fill="white">eSewa QR</text><text x="50%25" y="65%25" dominant-baseline="middle" text-anchor="middle" font-size="14" fill="white">Unish Gautam</text></svg>',
+  esewaPhone: '9841000000',
+  esewaName: 'Unish Gautam (Nyoria चिना)',
+  esewaEnabled: true,
+  khaltiQrUrl: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><rect width="200" height="200" fill="%235C2D91"/><text x="50%25" y="45%25" dominant-baseline="middle" text-anchor="middle" font-size="22" font-weight="bold" fill="white">Khalti QR</text><text x="50%25" y="65%25" dominant-baseline="middle" text-anchor="middle" font-size="14" fill="white">Unish Gautam</text></svg>',
+  khaltiPhone: '9841000000',
+  khaltiName: 'Unish Gautam (Nyoria चिना)',
+  khaltiEnabled: true,
+  instructionsEn: 'Scan using eSewa or Khalti app, pay exact NPR amount, take a screenshot of payment receipt, and enter your Transaction Reference ID below.',
+  instructionsNe: 'तपाईंको eSewa वा Khalti एपबाट QR स्क्यान गरी तोकिएको रकम भुक्तानी गर्नुहोस्। त्यसपछि रसिदको स्क्रिनसट अपलोड गरी कारोबार नम्बर (Transaction ID) पेश गर्नुहोस्।'
 };
 
 const DEFAULT_CREDITS: UserCredits = {
@@ -249,15 +275,49 @@ export const CreditManager = {
     localStorage.setItem('nyoria_payments', JSON.stringify(updated));
   },
 
+  getQrSettings(): PaymentQrSettings {
+    if (typeof window === 'undefined') return DEFAULT_QR_SETTINGS;
+    const saved = localStorage.getItem('nyoria_qr_settings');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed.esewaPhone || parsed.khaltiPhone) {
+          return { ...DEFAULT_QR_SETTINGS, ...parsed };
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return DEFAULT_QR_SETTINGS;
+  },
+
+  saveQrSettings(settings: PaymentQrSettings) {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem('nyoria_qr_settings', JSON.stringify(settings));
+    window.dispatchEvent(new CustomEvent('nyoria_qr_updated', { detail: settings }));
+    fetch('/api/payments/qr-settings', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings)
+    }).catch(() => {});
+  },
+
   hasCredit(type: 'ai_question' | 'palm_reading' | 'kundali', userId?: string): boolean {
+    const sub = CreditManager.getSubscription(userId);
+    if (sub.planId === 'plan-ultimate') return true; // Unlimited plan
     const creds = CreditManager.getCredits(userId);
-    if (type === 'ai_question') return creds.aiQuestions > 0;
-    if (type === 'palm_reading') return creds.palmReadings > 0;
-    if (type === 'kundali') return creds.kundalis > 0;
+    if (type === 'ai_question') return creds.aiQuestions > 0 || creds.aiQuestions >= 99999;
+    if (type === 'palm_reading') return creds.palmReadings > 0 || creds.palmReadings >= 99999;
+    if (type === 'kundali') return creds.kundalis > 0 || creds.kundalis >= 99999;
     return false;
   },
 
-  deductCredit(type: 'ai_question' | 'palm_reading' | 'kundali', userId?: string): { success: boolean; remaining: number; error?: string } {
+  deductCredit(type: 'ai_question' | 'palm_reading' | 'kundali', userId?: string): { success: boolean; remaining: number | string; error?: string } {
+    const sub = CreditManager.getSubscription(userId);
+    if (sub.planId === 'plan-ultimate') {
+      return { success: true, remaining: '∞' }; // Unlimited plan
+    }
+
     const creds = CreditManager.getCredits(userId);
 
     if (type === 'ai_question') {

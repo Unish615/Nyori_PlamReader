@@ -270,7 +270,7 @@ export default function DashboardPage() {
               { id: 'plan-free', name: 'Free (NPR 0)', nameNe: 'निःशुल्क (रू ०)' },
               { id: 'plan-basic', name: 'Basic (NPR 100)', nameNe: 'आधारभूत (रू १००)' },
               { id: 'plan-premium', name: 'Premium (NPR 299)', nameNe: 'प्रिमियम (रू २९९)' },
-              { id: 'plan-ultimate', name: 'Ultimate (NPR 599)', nameNe: 'अल्टिमेट (रू ५९९)' }
+              { id: 'plan-ultimate', name: 'Ultimate (NPR 599 - ∞)', nameNe: 'अल्टिमेट (रू ५९९ - ∞)' }
             ].map(p => {
               const active = subscription.planId === p.id;
               return (
@@ -298,8 +298,17 @@ export default function DashboardPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400 font-medium font-devanagari">
                 {t.credits.aiQuestionsRemaining}
               </span>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">
-                {credits.aiQuestions}
+              <p className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                {subscription.planId === 'plan-ultimate' || credits.aiQuestions >= 99999 ? (
+                  <>
+                    <span className="text-3xl text-gold-500">∞</span>
+                    <span className="text-[11px] font-bold text-gold-600 dark:text-gold-400 px-2 py-0.5 rounded-full bg-gold-500/10 border border-gold-500/30">
+                      {isNe ? 'असीमित' : 'Unlimited'}
+                    </span>
+                  </>
+                ) : (
+                  credits.aiQuestions
+                )}
               </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
@@ -313,8 +322,17 @@ export default function DashboardPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400 font-medium font-devanagari">
                 {t.credits.palmReadingsRemaining}
               </span>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">
-                {credits.palmReadings}
+              <p className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                {subscription.planId === 'plan-ultimate' || credits.palmReadings >= 99999 ? (
+                  <>
+                    <span className="text-3xl text-gold-500">∞</span>
+                    <span className="text-[11px] font-bold text-gold-600 dark:text-gold-400 px-2 py-0.5 rounded-full bg-gold-500/10 border border-gold-500/30">
+                      {isNe ? 'असीमित' : 'Unlimited'}
+                    </span>
+                  </>
+                ) : (
+                  credits.palmReadings
+                )}
               </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-gold-500/10 text-gold-600 dark:text-gold-400 flex items-center justify-center">
@@ -328,8 +346,17 @@ export default function DashboardPage() {
               <span className="text-xs text-gray-500 dark:text-gray-400 font-medium font-devanagari">
                 {t.credits.kundaliReportsRemaining}
               </span>
-              <p className="text-2xl font-black text-gray-900 dark:text-white">
-                {credits.kundalis}
+              <p className="text-2xl font-black text-gray-900 dark:text-white flex items-center gap-1.5">
+                {subscription.planId === 'plan-ultimate' || credits.kundalis >= 99999 ? (
+                  <>
+                    <span className="text-3xl text-gold-500">∞</span>
+                    <span className="text-[11px] font-bold text-gold-600 dark:text-gold-400 px-2 py-0.5 rounded-full bg-gold-500/10 border border-gold-500/30">
+                      {isNe ? 'असीमित' : 'Unlimited'}
+                    </span>
+                  </>
+                ) : (
+                  credits.kundalis
+                )}
               </p>
             </div>
             <div className="w-10 h-10 rounded-xl bg-royal-600/10 text-royal-600 dark:text-royal-400 flex items-center justify-center">

@@ -43,12 +43,21 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
   const [transactionRef, setTransactionRef] = useState('');
   const [note, setNote] = useState('');
   const [screenshotPreview, setScreenshotPreview] = useState<string | null>(null);
-  const [qrSettings, setQrSettings] = useState<any>(null);
+  const [qrSettings, setQrSettings] = useState<any>(() => CreditManager.getQrSettings());
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    // Sync with local QR settings
+    const local = CreditManager.getQrSettings();
+    if (local) setQrSettings(local);
+
+    const handleQrUpdated = (e: any) => {
+      if (e.detail) setQrSettings(e.detail);
+    };
+    window.addEventListener('nyoria_qr_updated', handleQrUpdated);
+
     if (isOpen) {
       setErrorMsg(null);
       setSuccessMsg(null);
@@ -56,38 +65,43 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
       setNote('');
       setScreenshotPreview(null);
 
-      // Fetch active QR settings
+      // Fetch active QR settings from server as well
       fetch('/api/payments/qr-settings')
         .then(res => res.json())
         .then(data => {
-          if (data.success && data.settings) {
-            setQrSettings(data.settings);
+          if (data.success && data.settings && (data.settings.esewaQrUrl || data.settings.khaltiQrUrl)) {
+            setQrSettings((prev: any) => ({ ...prev, ...data.settings }));
           }
         })
         .catch(() => {});
     }
+
+    return () => {
+      window.removeEventListener('nyoria_qr_updated', handleQrUpdated);
+    };
   }, [isOpen]);
 
   if (!isOpen || !plan) return null;
 
+  const defaultQr = CreditManager.getQrSettings();
   const activeQr = paymentMethod === 'esewa'
-    ? (qrSettings?.esewaQrUrl || '/images/esewa-qr.svg')
-    : (qrSettings?.khaltiQrUrl || '/images/khalti-qr.svg');
+    ? (qrSettings?.esewaQrUrl || defaultQr.esewaQrUrl)
+    : (qrSettings?.khaltiQrUrl || defaultQr.khaltiQrUrl);
 
   const receiverName = paymentMethod === 'esewa'
-    ? (qrSettings?.esewaName || 'Unish Gautam (Nyoria चिना)')
-    : (qrSettings?.khaltiName || 'Unish Gautam (Nyoria चिना)');
+    ? (qrSettings?.esewaName || defaultQr.esewaName || 'Unish Gautam (Nyoria चिना)')
+    : (qrSettings?.khaltiName || defaultQr.khaltiName || 'Unish Gautam (Nyoria चिना)');
 
   const receiverPhone = paymentMethod === 'esewa'
-    ? (qrSettings?.esewaPhone || '9841000000')
-    : (qrSettings?.khaltiPhone || '9841000000');
+    ? (qrSettings?.esewaPhone || defaultQr.esewaPhone || '9841000000')
+    : (qrSettings?.khaltiPhone || defaultQr.khaltiPhone || '9841000000');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      setErrorMsg(isNe ? 'फोटोको साइज १० MB भन्दा कम हुनुपर्छ।' : 'Screenshot file size must be less than 10MB.');
+    if (file.size > 15 * 1024 * 1024) {
+      setErrorMsg(isNe ? 'फोटोको साइज १५ MB भन्दा कम हुनुपर्छ।' : 'Screenshot file size must be less than 15MB.');
       return;
     }
 
@@ -98,8 +112,39 @@ export function PaymentModal({ plan, isOpen, onClose, onSuccess }: PaymentModalP
 
     setErrorMsg(null);
     const reader = new FileReader();
-    reader.onload = () => {
-      setScreenshotPreview(reader.result as string);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        // Compress screenshot to max 800px width/height for fast upload and zero failures
+        const canvas = document.createElement('canvas');
+        const maxDim = 800;
+        let width = img.width;
+        let height = img.height;
+        if (width > height) {
+          if (width > maxDim) {
+            height = Math.round((height * maxDim) / width);
+            width = maxDim;
+          }
+        } else {
+          if (height > maxDim) {
+            width = Math.round((width * maxDim) / height);
+            height = maxDim;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          setScreenshotPreview(canvas.toDataURL('image/jpeg', 0.85));
+        } else {
+          setScreenshotPreview(event.target?.result as string);
+        }
+      };
+      img.onerror = () => {
+        setScreenshotPreview(event.target?.result as string);
+      };
+      img.src = event.target?.result as string;
     };
     reader.readAsDataURL(file);
   };

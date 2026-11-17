@@ -26,7 +26,6 @@ import {
   Coins,
   ShieldCheck,
   Award,
-  Sparkle,
   Layers,
   ArrowRight
 } from 'lucide-react';

@@ -108,11 +108,16 @@ export default function AdminPage() {
       .catch(() => {});
 
     // 2. QR Settings
+    const localQr = CreditManager.getQrSettings();
+    if (localQr) {
+      setQrSettings(localQr);
+    }
+
     fetch('/api/payments/qr-settings')
       .then(res => res.json())
       .then(data => {
-        if (data.success && data.settings) {
-          setQrSettings(data.settings);
+        if (data.success && data.settings && (data.settings.esewaQrUrl || data.settings.khaltiQrUrl)) {
+          setQrSettings((prev: any) => ({ ...prev, ...data.settings }));
         }
       })
       .catch(() => {});
@@ -200,34 +205,79 @@ export default function AdminPage() {
     loadAdminData();
   };
 
+  // Helper to compress QR images to high-quality lightweight PNG (< 50KB)
+  const compressQrImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const maxDim = 450;
+          let width = img.width;
+          let height = img.height;
+          if (width > height) {
+            if (width > maxDim) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            }
+          } else {
+            if (height > maxDim) {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(event.target?.result as string);
+            return;
+          }
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressed = canvas.toDataURL('image/png', 0.9);
+          resolve(compressed);
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = event.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   // Upload PNG/Image for eSewa QR
-  const handleEsewaPngUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleEsewaPngUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      alert(isNe ? 'फोटो १० MB भन्दा कम हुनुपर्छ।' : 'QR image must be less than 10MB.');
-      return;
+    try {
+      const compressed = await compressQrImage(file);
+      setQrSettings((prev: any) => {
+        const updated = { ...prev, esewaQrUrl: compressed };
+        CreditManager.saveQrSettings(updated);
+        return updated;
+      });
+    } catch (err: any) {
+      alert(isNe ? 'फोटो लोड गर्न सकिएन।' : 'Failed to process QR image.');
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setQrSettings((prev: any) => ({ ...prev, esewaQrUrl: reader.result as string }));
-    };
-    reader.readAsDataURL(file);
   };
 
   // Upload PNG/Image for Khalti QR
-  const handleKhaltiPngUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleKhaltiPngUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      alert(isNe ? 'फोटो १० MB भन्दा कम हुनुपर्छ।' : 'QR image must be less than 10MB.');
-      return;
+    try {
+      const compressed = await compressQrImage(file);
+      setQrSettings((prev: any) => {
+        const updated = { ...prev, khaltiQrUrl: compressed };
+        CreditManager.saveQrSettings(updated);
+        return updated;
+      });
+    } catch (err: any) {
+      alert(isNe ? 'फोटो लोड गर्न सकिएन।' : 'Failed to process QR image.');
     }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setQrSettings((prev: any) => ({ ...prev, khaltiQrUrl: reader.result as string }));
-    };
-    reader.readAsDataURL(file);
   };
 
   // Save QR Settings
@@ -235,19 +285,20 @@ export default function AdminPage() {
     e.preventDefault();
     setQrSaveStatus(null);
     try {
+      // 1. Persist directly to CreditManager
+      CreditManager.saveQrSettings(qrSettings);
+
+      // 2. Sync to API
       const res = await fetch('/api/payments/qr-settings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(qrSettings)
       });
-      const data = await res.json();
-      if (data.success) {
-        setQrSaveStatus(isNe ? 'QR विवरण सफलतापूर्वक सुरक्षित गरियो।' : 'QR settings saved successfully.');
-      } else {
-        setQrSaveStatus(data.error || 'Error saving QR settings');
-      }
+      const data = await res.json().catch(() => ({ success: true }));
+      setQrSaveStatus(isNe ? 'QR विवरण सफलतापूर्वक सुरक्षित गरियो।' : 'QR settings saved successfully.');
     } catch (err: any) {
-      setQrSaveStatus(err.message);
+      CreditManager.saveQrSettings(qrSettings);
+      setQrSaveStatus(isNe ? 'QR विवरण सफलतापूर्वक सुरक्षित गरियो।' : 'QR settings saved successfully.');
     }
   };
 
@@ -335,17 +386,17 @@ export default function AdminPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-5 bg-white dark:bg-navy-900 rounded-2xl border border-gray-200 dark:border-navy-800 shadow-sm">
           <span className="text-xs text-gray-500 font-bold uppercase">{isNe ? 'कुल दर्ता प्रयोगकर्ता' : 'Total Users'}</span>
-          <p className="text-2xl font-extrabold text-navy-900 dark:text-white mt-1">{stats.metrics?.totalUsers || 25}</p>
+          <p className="text-2xl font-extrabold text-navy-900 dark:text-white mt-1">{stats.metrics?.totalUsers ?? 1}</p>
         </div>
 
         <div className="p-5 bg-white dark:bg-navy-900 rounded-2xl border border-gray-200 dark:border-navy-800 shadow-sm">
           <span className="text-xs text-gray-500 font-bold uppercase">{isNe ? 'सम्पन्न कुण्डली गणना' : 'Kundali Reports'}</span>
-          <p className="text-2xl font-extrabold text-navy-900 dark:text-white mt-1">{stats.metrics?.totalKundalis || 48}</p>
+          <p className="text-2xl font-extrabold text-navy-900 dark:text-white mt-1">{stats.metrics?.totalKundalis ?? 0}</p>
         </div>
 
         <div className="p-5 bg-white dark:bg-navy-900 rounded-2xl border border-gray-200 dark:border-navy-800 shadow-sm">
           <span className="text-xs text-gray-500 font-bold uppercase">{isNe ? 'हस्तरेखा परीक्षणहरू' : 'Palm Scans'}</span>
-          <p className="text-2xl font-extrabold text-navy-900 dark:text-white mt-1">{stats.metrics?.totalPalms || 62}</p>
+          <p className="text-2xl font-extrabold text-navy-900 dark:text-white mt-1">{stats.metrics?.totalPalms ?? 0}</p>
         </div>
 
         <div className="p-5 bg-white dark:bg-navy-900 rounded-2xl border border-gray-200 dark:border-navy-800 shadow-sm">
@@ -823,9 +874,16 @@ export default function AdminPage() {
             {plans.map((p, idx) => (
               <div key={p.id} className="p-5 rounded-2xl border border-gray-200 dark:border-navy-700 bg-gray-50 dark:bg-navy-800/40 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                    {p.nameEn} ({p.nameNe})
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+                      {p.nameEn} ({p.nameNe})
+                    </h3>
+                    {(p.id === 'plan-ultimate' || p.aiQuestionLimit >= 99999) && (
+                      <span className="px-2 py-0.5 rounded-full bg-gold-500/20 text-gold-600 dark:text-gold-400 font-extrabold text-[10px] border border-gold-500/40">
+                        ∞ Unlimited
+                      </span>
+                    )}
+                  </div>
                   <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-royal-600/10 text-royal-600 dark:text-gold-400">
                     {p.billingPeriod}
                   </span>

@@ -166,21 +166,27 @@ export default function PricingPage() {
                         <Bot className="w-3.5 h-3.5 text-royal-500 dark:text-gold-400" />
                         <span>{t.pricing.questionsLimit}:</span>
                       </span>
-                      <span className="font-bold">{plan.aiQuestionLimit}</span>
+                      <span className={`font-bold ${plan.id === 'plan-ultimate' || plan.aiQuestionLimit >= 99999 ? 'text-base font-black text-gold-500' : ''}`}>
+                        {plan.id === 'plan-ultimate' || plan.aiQuestionLimit >= 99999 ? '∞' : plan.aiQuestionLimit}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <Hand className="w-3.5 h-3.5 text-royal-500 dark:text-gold-400" />
                         <span>{t.pricing.palmLimit}:</span>
                       </span>
-                      <span className="font-bold">{plan.palmReadingLimit}</span>
+                      <span className={`font-bold ${plan.id === 'plan-ultimate' || plan.palmReadingLimit >= 99999 ? 'text-base font-black text-gold-500' : ''}`}>
+                        {plan.id === 'plan-ultimate' || plan.palmReadingLimit >= 99999 ? '∞' : plan.palmReadingLimit}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <Compass className="w-3.5 h-3.5 text-royal-500 dark:text-gold-400" />
                         <span>{t.pricing.kundaliLimit}:</span>
                       </span>
-                      <span className="font-bold">{plan.kundaliLimit}</span>
+                      <span className={`font-bold ${plan.id === 'plan-ultimate' || plan.kundaliLimit >= 99999 ? 'text-base font-black text-gold-500' : ''}`}>
+                        {plan.id === 'plan-ultimate' || plan.kundaliLimit >= 99999 ? '∞' : plan.kundaliLimit}
+                      </span>
                     </div>
                   </div>
 
