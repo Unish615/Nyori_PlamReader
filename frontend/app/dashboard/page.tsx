@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { CreditManager } from '../../lib/creditManager';
+import { AuthGuard } from '../../components/AuthGuard';
 import Link from 'next/link';
 import { 
   LayoutDashboard, 
@@ -185,7 +186,8 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+    <AuthGuard featureName="User Dashboard" featureNameNe="व्यक्तिगत ड्यासबोर्ड">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       
       {/* Welcome Banner */}
       <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-r from-royal-900 via-navy-900 to-navy-900 border border-royal-600/30 shadow-2xl text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 overflow-hidden">
@@ -612,6 +614,7 @@ export default function DashboardPage() {
 
       </div>
 
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

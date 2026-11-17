@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Compass, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Compass, Mail, Lock } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginForm() {
   const { language, t } = useLanguage();
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') || '/dashboard';
   const isNe = language === 'ne';
 
   const [email, setEmail] = useState('');
@@ -26,7 +28,7 @@ export default function LoginPage() {
     const success = await login(email, password);
     setLoading(false);
     if (success) {
-      router.push('/dashboard');
+      router.push(redirectTarget);
     } else {
       setError(isNe ? 'इमेल वा पासवर्ड मिलेन।' : 'Invalid email or password.');
     }
@@ -91,6 +93,7 @@ export default function LoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-navy-700 bg-gray-50 dark:bg-navy-800 text-gray-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
               />
             </div>
@@ -99,7 +102,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 hover:from-royal-500 hover:to-royal-600 text-white font-bold text-xs shadow-lg shadow-royal-600/30 transition-transform hover:scale-[1.01] disabled:opacity-50 font-devanagari"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 hover:from-royal-500 hover:to-royal-600 text-white font-bold text-xs shadow-lg shadow-royal-600/30 transition-transform hover:scale-[1.01] disabled:opacity-50 font-devanagari cursor-pointer"
           >
             {loading ? t.common.loading : t.nav.login}
           </button>
@@ -107,12 +110,27 @@ export default function LoginPage() {
 
         <div className="pt-2 text-center text-xs text-gray-500 font-devanagari">
           {isNe ? 'खाता छैन?' : "Don't have an account?"}{' '}
-          <Link href="/register" className="font-bold text-royal-600 dark:text-gold-400 hover:underline">
+          <Link 
+            href={redirectTarget !== '/dashboard' ? `/register?redirect=${encodeURIComponent(redirectTarget)}` : '/register'} 
+            className="font-bold text-royal-600 dark:text-gold-400 hover:underline cursor-pointer"
+          >
             {t.nav.register}
           </Link>
         </div>
 
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[80vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-royal-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

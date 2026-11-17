@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { CreditManager } from '../../lib/creditManager';
+import { AuthGuard } from '../../components/AuthGuard';
 
 export default function PalmReadingPage() {
   const { language, t } = useLanguage();
@@ -257,7 +258,8 @@ export default function PalmReadingPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-devanagari">
+    <AuthGuard featureName="Dual-Hand Palm Reading" featureNameNe="हस्तरेखा परीक्षण">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 font-devanagari">
       
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-10">
@@ -1052,7 +1054,8 @@ export default function PalmReadingPage() {
         </div>
       )}
 
-    </div>
+      </div>
+    </AuthGuard>
   );
 }
 

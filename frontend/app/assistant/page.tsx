@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { CreditManager } from '../../lib/creditManager';
+import { AuthGuard } from '../../components/AuthGuard';
 
 interface ChatMessage {
   id: string;
@@ -232,7 +233,8 @@ function AssistantContent() {
   ];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col h-[calc(100vh-140px)] min-h-[600px]">
+    <AuthGuard featureName="AI Jyotish Assistant" featureNameNe="AI ज्योतिष सहायक">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col h-[calc(100vh-140px)] min-h-[600px]">
       
       {/* Top Bar */}
       <div className="flex items-center justify-between pb-4 border-b border-gray-200 dark:border-navy-800">
@@ -387,6 +389,7 @@ function AssistantContent() {
         </form>
       </div>
 
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

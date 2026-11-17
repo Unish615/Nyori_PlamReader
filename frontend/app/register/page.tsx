@@ -1,16 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { Compass, Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { Compass, Mail, Lock, User } from 'lucide-react';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const { language, t } = useLanguage();
   const { register } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTarget = searchParams.get('redirect') || '/dashboard';
   const isNe = language === 'ne';
 
   const [formData, setFormData] = useState({
@@ -31,7 +33,7 @@ export default function RegisterPage() {
     const success = await register(formData);
     setLoading(false);
     if (success) {
-      router.push('/dashboard');
+      router.push(redirectTarget);
     } else {
       setError(isNe ? 'दर्ता प्रक्रिया असफल भयो। कृपया पुन: प्रयास गर्नुहोस्।' : 'Registration failed. Please try again.');
     }
@@ -65,7 +67,7 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 font-devanagari">
-              {isNe ? 'पूरा नाम' : 'Full Name'} *
+              {isNe ? 'पुरा नाम' : 'Full Name'}
             </label>
             <div className="relative">
               <User className="w-4 h-4 absolute left-3.5 top-3 text-gray-400" />
@@ -74,7 +76,7 @@ export default function RegisterPage() {
                 required
                 value={formData.fullName}
                 onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                placeholder="e.g. Unish Gautam"
+                placeholder="Unish Gautam"
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 dark:border-navy-700 bg-gray-50 dark:bg-navy-800 text-gray-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
               />
             </div>
@@ -82,20 +84,20 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 font-devanagari">
-              {isNe ? 'न्वारनको नाम (वैकल्पिक)' : 'Ceremony Name (न्वारनको नाम - Optional)'}
+              {isNe ? 'न्वारनको नाम (वैकल्पिक)' : 'Nwaran Name (Optional)'}
             </label>
             <input
               type="text"
               value={formData.nwaranName}
               onChange={(e) => setFormData({ ...formData, nwaranName: e.target.value })}
-              placeholder="e.g. शिव प्रसाद"
+              placeholder={isNe ? 'राशि अनुसारको नाम' : 'Vedic birth name'}
               className="w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-navy-700 bg-gray-50 dark:bg-navy-800 text-gray-900 dark:text-white text-xs font-medium focus:ring-2 focus:ring-royal-500 focus:outline-none"
             />
           </div>
 
           <div>
             <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 font-devanagari">
-              {isNe ? 'इमेल ठेगाना' : 'Email Address'} *
+              {isNe ? 'इमेल ठेगाना' : 'Email Address'}
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 absolute left-3.5 top-3 text-gray-400" />
@@ -112,7 +114,7 @@ export default function RegisterPage() {
 
           <div>
             <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1 font-devanagari">
-              {isNe ? 'पासवर्ड' : 'Password'} *
+              {isNe ? 'पासवर्ड' : 'Password'}
             </label>
             <div className="relative">
               <Lock className="w-4 h-4 absolute left-3.5 top-3 text-gray-400" />
@@ -131,7 +133,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 hover:from-royal-500 hover:to-royal-600 text-white font-bold text-xs shadow-lg shadow-royal-600/30 transition-transform hover:scale-[1.01] disabled:opacity-50 font-devanagari"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-royal-600 to-royal-700 hover:from-royal-500 hover:to-royal-600 text-white font-bold text-xs shadow-lg shadow-royal-600/30 transition-transform hover:scale-[1.01] disabled:opacity-50 font-devanagari cursor-pointer"
           >
             {loading ? t.common.loading : t.nav.register}
           </button>
@@ -139,12 +141,27 @@ export default function RegisterPage() {
 
         <div className="pt-2 text-center text-xs text-gray-500 font-devanagari">
           {isNe ? 'पहिल्यै खाता छ?' : 'Already have an account?'}{' '}
-          <Link href="/login" className="font-bold text-royal-600 dark:text-gold-400 hover:underline">
+          <Link 
+            href={redirectTarget !== '/dashboard' ? `/login?redirect=${encodeURIComponent(redirectTarget)}` : '/login'} 
+            className="font-bold text-royal-600 dark:text-gold-400 hover:underline cursor-pointer"
+          >
             {t.nav.login}
           </Link>
         </div>
 
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-[85vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-3 border-royal-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }

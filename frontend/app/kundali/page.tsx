@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { CreditManager } from '../../lib/creditManager';
+import { AuthGuard } from '../../components/AuthGuard';
 
 export default function KundaliPage() {
   const { language, t } = useLanguage();
@@ -208,7 +209,8 @@ export default function KundaliPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <AuthGuard featureName="Vedic Kundali Generation" featureNameNe="वैदिक कुण्डली निर्माण">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
       
       {/* Header */}
       <div className="text-center max-w-3xl mx-auto mb-10">
@@ -800,6 +802,7 @@ export default function KundaliPage() {
         </div>
       )}
 
-    </div>
+      </div>
+    </AuthGuard>
   );
 }
