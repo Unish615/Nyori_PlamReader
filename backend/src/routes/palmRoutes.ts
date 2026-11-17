@@ -20,6 +20,7 @@ const upload = multer({
 export const palmRouter = Router();
 
 palmRouter.post('/analyze', authenticate, upload.single('image'), PalmController.uploadAndAnalyze);
+palmRouter.post('/dual-analyze', authenticate, PalmController.dualAnalyze);
 palmRouter.post('/upload', authenticate, upload.single('image'), PalmController.uploadAndAnalyze);
 palmRouter.get('/history', authenticate, PalmController.getHistory);
 palmRouter.get('/:id', authenticate, PalmController.getById);

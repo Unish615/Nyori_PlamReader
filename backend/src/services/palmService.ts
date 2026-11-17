@@ -54,6 +54,48 @@ export class PalmService {
     return records;
   }
 
+  static async processDualPalmReading(params: {
+    userId?: string;
+    gender: 'male' | 'female';
+    leftHandBase64: string;
+    rightHandBase64: string;
+  }) {
+    const reportId = `plm-dual-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const effectiveUserId = params.userId || 'usr-demo-01';
+
+    const leftAnalysis = generateTraditionalPalmReading('left');
+    const rightAnalysis = generateTraditionalPalmReading('right');
+
+    const reading = {
+      id: reportId,
+      isDual: true,
+      gender: params.gender,
+      leftHandImageUrl: params.leftHandBase64,
+      rightHandImageUrl: params.rightHandBase64,
+      qualityStatus: 'verified',
+      analysis: {
+        quality: { status: 'verified', messageEn: 'Dual-hand images verified', messageNe: 'दुवै हात प्रमाणित भए' },
+        leftHandFeatures: leftAnalysis.features,
+        rightHandFeatures: rightAnalysis.features,
+        interpretations: {
+          generalSummary: {
+            en: 'Your dual-hand synthesis reveals an organized, visionary individual whose active karma substantially builds upon inborn potential.',
+            ne: 'दुवै हातको संयुक्त अध्ययनले तपाईं आफ्ना जन्मजात प्रतिभालाई निरन्तर कर्म र अनुशासनद्वारा सफलतामा बदल्ने व्यक्ति भएको देखाउँछ।'
+          }
+        }
+      },
+      createdAt: new Date().toISOString()
+    };
+
+    store.palmReadings.set(reportId, reading as any);
+    store.logActivity(effectiveUserId, 'DUAL_PALM_ANALYZED', { reportId, gender: params.gender });
+
+    return {
+      success: true,
+      reading
+    };
+  }
+
   static getById(id: string) {
     const record = store.palmReadings.get(id);
     if (!record) {

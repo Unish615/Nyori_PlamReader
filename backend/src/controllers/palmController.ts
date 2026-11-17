@@ -52,6 +52,32 @@ export class PalmController {
     }
   }
 
+  static async dualAnalyze(req: AuthenticatedRequest, res: Response) {
+    try {
+      const userId = req.user?.id || 'usr-demo-01';
+      const gender = req.body.gender === 'female' ? 'female' : 'male';
+      const { leftHandBase64, rightHandBase64 } = req.body;
+
+      if (!leftHandBase64 || !rightHandBase64) {
+        return res.status(400).json({
+          success: false,
+          error: 'Both leftHandBase64 and rightHandBase64 are required for dual palm reading.'
+        });
+      }
+
+      const result = await PalmService.processDualPalmReading({
+        userId,
+        gender,
+        leftHandBase64,
+        rightHandBase64
+      });
+
+      res.status(201).json(result);
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+
   static async getHistory(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = req.user?.id || 'usr-demo-01';
